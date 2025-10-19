@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { TrendingUp, TrendingDown, Euro, CreditCard, PiggyBank, ChevronDown, ChevronUp } from "lucide-react";
+// Import de LucideIcon pour le typage correct des icônes
+import { TrendingUp, TrendingDown, Euro, CreditCard, PiggyBank, ChevronDown, ChevronUp, LucideIcon } from "lucide-react";
 
+// NOTE: Assurez-vous que ces imports de composants existent (Card, Tabs, etc.)
 import { Card } from "./card"; 
-import { Tabs, TabsList, TabsTrigger } from "./tabs";
+import { Tabs, TabsList, TabsTrigger } from "./tabs"; 
 
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
@@ -15,19 +17,50 @@ const ACCENT_COLORS = {
   autres: '#ef4444',       // Rouge (red-500)
 };
 
+// --- CORRECTION TS7031: Interface de Typage pour les Props de KPICard ---
+interface KPICardProps {
+    title: string;
+    value: number;
+    icon: LucideIcon; 
+    colorClass: string;
+    evolution: number;
+    valueSuffix?: string;
+    valuePrefix?: string;
+}
+
 // Fonction pour simuler la composition d'une KPICard avec les styles demandés
-const KPICard = ({ title, value, icon: Icon, colorClass, evolution, valueSuffix = '€', valuePrefix = '' }) => {
+const KPICard = ({ 
+    title, 
+    value, 
+    icon: Icon, 
+    colorClass, 
+    evolution, 
+    valueSuffix = '€', 
+    valuePrefix = '' 
+}: KPICardProps) => { // <-- Typage appliqué ici
   
-  const isPositive = evolution > 0;
-  const trendIcon = isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />;
-  const trendColor = isPositive ? 'text-green-500 bg-green-500/20' : 'text-orange-500 bg-orange-500/20';
+  const isPositive = evolution >= 0; // Utilisation de >= 0
   
-  // Utilisation de blue-500 pour le CA (Revenus), red-500 pour Charges, green-500 pour Bénéfice
-  const iconBgColor = 
-    colorClass.includes('blue-500') ? 'bg-blue-500/20 border-blue-500/30' :
-    colorClass.includes('red-500') ? 'bg-red-500/20 border-red-500/30' :
-    colorClass.includes('green-500') ? 'bg-green-500/20 border-green-500/30' :
-    'bg-purple-500/20 border-purple-500/30';
+  const trendIcon = isPositive 
+    ? <TrendingUp className="w-4 h-4" /> 
+    : <TrendingDown className="w-4 h-4" />;
+  
+  // Logique : Vert (green-500) pour positif, Rouge (red-500) pour négatif
+  const trendColor = isPositive 
+    ? 'text-green-500 bg-green-500/20' 
+    : 'text-red-500 bg-red-500/20'; 
+
+  
+  // CORRECTION: Mapping direct des classes d'icônes aux classes de fond
+  let iconBgColor = 'bg-purple-500/20 border-purple-500/30'; 
+
+  if (colorClass === 'text-blue-500') {
+    iconBgColor = 'bg-blue-500/20 border-blue-500/30'; // Revenus (Bleu)
+  } else if (colorClass === 'text-red-500') {
+    iconBgColor = 'bg-red-500/20 border-red-500/30'; // Charges (Rouge)
+  } else if (colorClass === 'text-green-500') {
+    iconBgColor = 'bg-green-500/20 border-green-500/30'; // Bénéfice (Vert)
+  }
   
   return (
     <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 hover:scale-[1.02] transition-all duration-300">
@@ -37,7 +70,8 @@ const KPICard = ({ title, value, icon: Icon, colorClass, evolution, valueSuffix 
         </div>
         <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${trendColor} text-xs font-medium`}>
           {trendIcon}
-          {evolution > 0 ? `+${evolution}%` : `${evolution}%`}
+          {/* Affiche l'évolution avec un + si positif, et la valeur absolue */}
+          {evolution >= 0 ? `+${evolution}%` : `${evolution}%`} 
         </div>
       </div>
       <h3 className="text-3xl font-bold mb-1 text-white">{valuePrefix}{value.toLocaleString()} {valueSuffix}</h3>
@@ -57,7 +91,7 @@ export function Finance() {
     autres: false,
   });
 
-  // Données de démonstration - inchangées
+  // Données de démonstration
   const financialData = {
     mois: {
       ca: 12000,
@@ -103,7 +137,7 @@ export function Finance() {
 
   const currentData = financialData[period];
 
-  // Données pour le graphique d'évolution (12 mois) - inchangées
+  // Données pour le graphique d'évolution (12 mois)
   const evolutionData = [
     { mois: "Jan", revenus: 12000, depenses: 7500 },
     { mois: "Fév", revenus: 13500, depenses: 8000 },
@@ -305,24 +339,22 @@ export function Finance() {
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={evolutionData}>
               <defs>
-                {/* Utilisation de green-500 (#10b981) pour les Revenus (Succès/Positif) */}
                 <linearGradient id="colorRevenus" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                 </linearGradient>
-                {/* Utilisation de red-500 (#ef4444) pour les Dépenses (Négatif) */}
                 <linearGradient id="colorDepenses" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" /> {/* Lignes de grille en white/10 */}
-              <XAxis dataKey="mois" stroke="#ffffff40" tick={{ fill: "#ffffff66" }} /> {/* Texte Axe X en white/40 */}
-              <YAxis stroke="#ffffff40" tick={{ fill: "#ffffff66" }} /> {/* Texte Axe Y en white/40 */}
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" /> 
+              <XAxis dataKey="mois" stroke="#ffffff40" tick={{ fill: "#ffffff66" }} /> 
+              <YAxis stroke="#ffffff40" tick={{ fill: "#ffffff66" }} /> 
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: "rgba(15, 23, 42, 0.9)", // bg-slate-900/90
-                  border: "1px solid #ffffff1a", // border-white/10
+                  backgroundColor: "rgba(15, 23, 42, 0.9)", 
+                  border: "1px solid #ffffff1a", 
                   borderRadius: "8px"
                 }}
                 labelStyle={{ color: 'white' }}
@@ -332,7 +364,7 @@ export function Finance() {
               <Area 
                 type="monotone" 
                 dataKey="revenus" 
-                stroke="#10b981" // green-500
+                stroke="#10b981" 
                 fill="url(#colorRevenus)"
                 strokeWidth={2}
                 name="Revenus"
@@ -340,7 +372,7 @@ export function Finance() {
               <Area 
                 type="monotone" 
                 dataKey="depenses" 
-                stroke="#ef4444" // red-500
+                stroke="#ef4444" 
                 fill="url(#colorDepenses)"
                 strokeWidth={2}
                 name="Dépenses"
@@ -349,7 +381,7 @@ export function Finance() {
           </ResponsiveContainer>
         </Card>
 
-        {/* Graphique Donut */}
+        {/* Graphique Donut (CORRIGÉ pour Recharts) */}
         <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
           <h3 className="text-lg font-semibold mb-4 text-white">Répartition des Dépenses (Mois)</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -364,19 +396,20 @@ export function Finance() {
                 dataKey="value"
                 labelLine={false}
               >
+                {/* CORRECTION: fill utilise le code hexadécimal défini et key utilise l'index */}
                 {depensesRepartition.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.color} // Couleur HEX valide
-                    stroke="#0f172a" // Correspond à bg-slate-900 
+                    fill={entry.color} 
+                    stroke="#0f172a" // Correspond à bg-slate-900
                     strokeWidth={3} 
                   /> 
                 ))}
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: "rgba(15, 23, 42, 0.9)", // bg-slate-900/90
-                  border: "1px solid #ffffff1a", // border-white/10
+                  backgroundColor: "rgba(15, 23, 42, 0.9)", 
+                  border: "1px solid #ffffff1a", 
                   borderRadius: "8px"
                 }}
                 formatter={(value: any) => `${value.toLocaleString()} €`}
