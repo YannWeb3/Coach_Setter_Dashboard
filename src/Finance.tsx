@@ -68,7 +68,7 @@ const KPICard = ({
   )
 }
 
-export default function Finance() {
+export function Finance() {
   const [period, setPeriod] = useState<"mois" | "semestre" | "annee">("mois");
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     personnel: true,
