@@ -1,34 +1,27 @@
 import { useState } from "react";
-// Import de LucideIcon pour le typage correct des icônes
-import { TrendingUp, TrendingDown, Euro, CreditCard, PiggyBank, ChevronDown, ChevronUp, LucideIcon } from "lucide-react";
-
-// NOTE: Assurez-vous que ces imports de composants existent (Card, Tabs, etc.)
-import { Card } from "./card"; 
-import { Tabs, TabsList, TabsTrigger } from "./tabs"; 
-
+import { TrendingUp, TrendingDown, Euro, CreditCard, PiggyBank, ChevronDown, ChevronUp } from "lucide-react";
+import { Card } from "./card";
+import { Tabs, TabsList, TabsTrigger } from "./tabs";
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-// --- Définition des couleurs d'accentuation en codes HEX pour Recharts ---
 const ACCENT_COLORS = {
-  personnel: '#3b82f6',    // Bleu (blue-500)
-  abonnements: '#10b981',  // Vert (green-500)
-  prestataires: '#8b5cf6', // Violet (purple-500)
-  achats: '#f59e0b',       // Orange (orange-500)
-  autres: '#ef4444',       // Rouge (red-500)
+  personnel: '#3b82f6',
+  abonnements: '#10b981',
+  prestataires: '#8b5cf6',
+  achats: '#f59e0b',
+  autres: '#ef4444',
 };
 
-// --- CORRECTION TS7031: Interface de Typage pour les Props de KPICard ---
 interface KPICardProps {
     title: string;
     value: number;
-    icon: LucideIcon; 
+    icon: any; 
     colorClass: string;
     evolution: number;
     valueSuffix?: string;
     valuePrefix?: string;
 }
 
-// Fonction pour simuler la composition d'une KPICard avec les styles demandés
 const KPICard = ({ 
     title, 
     value, 
@@ -37,40 +30,34 @@ const KPICard = ({
     evolution, 
     valueSuffix = '€', 
     valuePrefix = '' 
-}: KPICardProps) => { // <-- Typage appliqué ici
-  
-  const isPositive = evolution >= 0; // Utilisation de >= 0
-  
+}: KPICardProps) => {
+  const isPositive = evolution >= 0;
   const trendIcon = isPositive 
     ? <TrendingUp className="w-4 h-4" /> 
     : <TrendingDown className="w-4 h-4" />;
   
-  // Logique : Vert (green-500) pour positif, Rouge (red-500) pour négatif
   const trendColor = isPositive 
     ? 'text-green-500 bg-green-500/20' 
     : 'text-red-500 bg-red-500/20'; 
 
-  
-  // CORRECTION: Mapping direct des classes d'icônes aux classes de fond
   let iconBgColor = 'bg-purple-500/20 border-purple-500/30'; 
 
   if (colorClass === 'text-blue-500') {
-    iconBgColor = 'bg-blue-500/20 border-blue-500/30'; // Revenus (Bleu)
+    iconBgColor = 'bg-blue-500/20 border-blue-500/30';
   } else if (colorClass === 'text-red-500') {
-    iconBgColor = 'bg-red-500/20 border-red-500/30'; // Charges (Rouge)
+    iconBgColor = 'bg-red-500/20 border-red-500/30';
   } else if (colorClass === 'text-green-500') {
-    iconBgColor = 'bg-green-500/20 border-green-500/30'; // Bénéfice (Vert)
+    iconBgColor = 'bg-green-500/20 border-green-500/30';
   }
   
   return (
-    <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 hover:scale-[1.02] transition-all duration-300">
+    <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 hover:scale-[1.02] transition-all duration-300 p-6">
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-12 h-12 rounded-xl ${iconBgColor} flex items-center justify-center`}>
+        <div className={`w-12 h-12 rounded-xl ${iconBgColor} flex items-center justify-center border`}>
           <Icon className={`w-6 h-6 ${colorClass}`} />
         </div>
         <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${trendColor} text-xs font-medium`}>
           {trendIcon}
-          {/* Affiche l'évolution avec un + si positif, et la valeur absolue */}
           {evolution >= 0 ? `+${evolution}%` : `${evolution}%`} 
         </div>
       </div>
@@ -81,7 +68,7 @@ const KPICard = ({
   )
 }
 
-export function Finance() {
+export default function Finance() {
   const [period, setPeriod] = useState<"mois" | "semestre" | "annee">("mois");
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     personnel: true,
@@ -91,7 +78,6 @@ export function Finance() {
     autres: false,
   });
 
-  // Données de démonstration
   const financialData = {
     mois: {
       ca: 12000,
@@ -137,7 +123,6 @@ export function Finance() {
 
   const currentData = financialData[period];
 
-  // Données pour le graphique d'évolution (12 mois)
   const evolutionData = [
     { mois: "Jan", revenus: 12000, depenses: 7500 },
     { mois: "Fév", revenus: 13500, depenses: 8000 },
@@ -153,7 +138,6 @@ export function Finance() {
     { mois: "Déc", revenus: 15000, depenses: 8500 },
   ];
 
-  // Données pour le donut des dépenses - utilise les codes HEX pour Recharts
   const depensesRepartition = [
     { name: "Personnel", value: financialData.mois.depenses.personnel.total, color: ACCENT_COLORS.personnel },
     { name: "Abonnements", value: financialData.mois.depenses.abonnements.total, color: ACCENT_COLORS.abonnements },
@@ -169,17 +153,15 @@ export function Finance() {
   const marge = ((currentData.benefice / currentData.totalRevenus) * 100).toFixed(1);
 
   return (
-    // Application du fond principal au composant racine
     <div className="min-h-screen p-6 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white space-y-8">
       <h1 className="text-3xl font-extrabold mb-8 text-center">Tableau de Bord Financier 📈</h1>
 
-      {/* Hero Section - 3 grandes cartes (KPICard simulées) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <KPICard 
           title="Total Revenus (CA + Upsells)" 
           value={currentData.totalRevenus} 
           icon={Euro} 
-          colorClass="text-blue-500" // Bleu
+          colorClass="text-blue-500"
           evolution={currentData.evolution.ca} 
         />
         
@@ -187,7 +169,7 @@ export function Finance() {
           title="Charges Totales" 
           value={currentData.totalCharges} 
           icon={CreditCard} 
-          colorClass="text-red-500" // Rouge
+          colorClass="text-red-500"
           evolution={currentData.evolution.charges}
         />
         
@@ -195,13 +177,12 @@ export function Finance() {
           title={`Bénéfice Net (Marge: ${marge}%)`}
           value={currentData.benefice} 
           icon={PiggyBank} 
-          colorClass="text-green-500" // Vert
+          colorClass="text-green-500"
           evolution={currentData.evolution.benefice}
           valuePrefix=""
         />
       </div>
 
-      {/* Sélecteur de période */}
       <Tabs value={period} onValueChange={(v) => setPeriod(v as any)} className="w-full pt-4">
         <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 bg-slate-900/50 rounded-xl border border-white/10 p-1">
           <TabsTrigger 
@@ -225,9 +206,7 @@ export function Finance() {
         </TabsList>
       </Tabs>
 
-      {/* Détails Revenus & Dépenses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Card Revenus */}
         <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
           <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
             <Euro className="w-5 h-5 text-blue-500" />
@@ -235,7 +214,6 @@ export function Finance() {
           </h2>
           
           <div className="space-y-4">
-            {/* CA Card */}
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-white">Chiffre d'Affaires</span>
@@ -253,7 +231,6 @@ export function Finance() {
               </div>
             </div>
 
-            {/* Upsells Card */}
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-white">Upsells</span>
@@ -267,7 +244,6 @@ export function Finance() {
               </div>
             </div>
 
-            {/* Total Revenus */}
             <div className="border-t border-white/10 pt-4">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-white">TOTAL REVENUS</span>
@@ -277,7 +253,6 @@ export function Finance() {
           </div>
         </Card>
 
-        {/* Card Dépenses */}
         <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
           <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
             <CreditCard className="w-5 h-5 text-red-500" />
@@ -312,7 +287,6 @@ export function Finance() {
                 </div>
               ))}
 
-              {/* Total Dépenses */}
               <div className="border-t border-white/10 pt-4">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-white">TOTAL DÉPENSES</span>
@@ -331,9 +305,7 @@ export function Finance() {
         </Card>
       </div>
 
-      {/* Graphiques */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Graphique Évolution */}
         <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
           <h3 className="text-lg font-semibold mb-4 text-white">Évolution Revenus vs Dépenses (12 mois)</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -381,7 +353,6 @@ export function Finance() {
           </ResponsiveContainer>
         </Card>
 
-        {/* Graphique Donut (CORRIGÉ pour Recharts) */}
         <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
           <h3 className="text-lg font-semibold mb-4 text-white">Répartition des Dépenses (Mois)</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -396,12 +367,11 @@ export function Finance() {
                 dataKey="value"
                 labelLine={false}
               >
-                {/* CORRECTION: fill utilise le code hexadécimal défini et key utilise l'index */}
                 {depensesRepartition.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={entry.color} 
-                    stroke="#0f172a" // Correspond à bg-slate-900
+                    stroke="#0f172a"
                     strokeWidth={3} 
                   /> 
                 ))}
@@ -421,7 +391,6 @@ export function Finance() {
         </Card>
       </div>
 
-      {/* Tableau comparatif */}
       <Card className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
         <h3 className="text-lg font-semibold mb-4 text-white">Vue Comparative Multi-Périodes</h3>
         <div className="overflow-x-auto">
