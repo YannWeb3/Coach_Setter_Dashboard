@@ -9,12 +9,13 @@ import Dashboard from './Dashboard'
 import Admin from './Admin'
 import Configuration from './Configuration'
 import { Loader2 } from 'lucide-react'
-import{ Finance } from './Finance'
+import { Finance } from './Finance'
+import AuthCallback from './pages/AuthCallback'
 
 export default function App() {
   const [session, setSession] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState<'login' | 'signup' | 'onboarding' | 'dashboard' | 'pilotage' | 'configuration' | 'Finance' | 'booster' | 'admin'>('login')
+  const [currentPage, setCurrentPage] = useState<'login' | 'signup' | 'onboarding' | 'dashboard' | 'pilotage' | 'configuration' | 'Finance' | 'booster' | 'admin' | 'auth-callback'>('login')
   const [isAdmin, setIsAdmin] = useState(false)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const [userName, setUserName] = useState('')
@@ -22,6 +23,17 @@ export default function App() {
   const [waitingForProfile, setWaitingForProfile] = useState(false)
 
   useEffect(() => {
+    // Vérifier si on est sur la page de callback
+    const path = window.location.pathname
+    const hash = window.location.hash
+    
+    if (path === '/auth/callback' || hash.includes('access_token')) {
+      console.log('🔗 Callback détecté, affichage page callback')
+      setCurrentPage('auth-callback')
+      setLoading(false)
+      return
+    }
+
     // Récupérer la session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -36,6 +48,7 @@ export default function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('🔄 Auth state change:', _event)
       setSession(session)
       if (session) {
         checkIfAdmin(session.user.id)
@@ -168,6 +181,11 @@ export default function App() {
     setWaitingForProfile(false)
   }
 
+  // 🆕 Affichage de la page callback
+  if (currentPage === 'auth-callback') {
+    return <AuthCallback />
+  }
+
   // Écran de chargement initial
   if (loading) {
     return (
@@ -235,7 +253,7 @@ export default function App() {
   return (
     <Layout
       currentPage={currentPage}
-      onNavigate={(page) => setCurrentPage(page as typeof currentPage)}  // ✅ Cast explicite
+      onNavigate={(page) => setCurrentPage(page as typeof currentPage)}
       onSignOut={handleSignOut}
       userEmail={userEmail}
       userName={userName}
